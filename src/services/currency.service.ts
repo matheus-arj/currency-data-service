@@ -12,25 +12,35 @@ import {
 export class CurrencyService {
   private readonly logger = new Logger(CurrencyService.name);
 
-  //API URL to get currency exchange data
+  // API URL to get currency exchange data
   private readonly URL = process.env.API_URL;
 
-  public async getCurrencyData(): Promise<CurrencyDto[]> {
+  public async getCurrencyData(page: number, size: number): Promise<CurrencyDto[]> {
     try {
       if (!this.URL) {
         throw new ApiUrlException();
       }
 
-      //Call to external API
+      // Call to external API
       const response = await axios.get(this.URL);
 
-      //If the data is empty, throw an error
+      // If the data is empty, throw an error
       if (!response.data || Object.keys(response.data).length === 0) {
         throw new ExternalApiNoDataException();
       }
 
       const filteredData = this.filterData(response.data);
-      return filteredData;
+
+      // Paginate the filtered data
+      const startIndex = (page - 1) * size;
+      const endIndex = startIndex + size;
+      this.logger.log(
+        `page: ${page}, size: ${size}, startIndex: ${startIndex}, endIndex: ${endIndex}, totalItems: ${filteredData.length}`,
+      );
+
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+
+      return paginatedData;
     } catch (error) {
       if (error instanceof ApiUrlException) {
         this.logger.error(error.message);
@@ -50,8 +60,8 @@ export class CurrencyService {
   private filterData(
     data: Record<string, { name: string; high: string; low: string; create_date: string }>,
   ): CurrencyDto[] {
-    //Filter the data to get only the necessary data
-    const filteredData = Object.keys(data).map((key) => {
+    // Filter the data to get only the necessary data
+    return Object.keys(data).map((key) => {
       return {
         currency: key,
         name: data[key].name,
@@ -60,6 +70,5 @@ export class CurrencyService {
         createdDate: data[key].create_date,
       };
     });
-    return filteredData;
   }
 }
