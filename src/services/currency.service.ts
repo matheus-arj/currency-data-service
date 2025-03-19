@@ -77,6 +77,7 @@ export class CurrencyService {
       return [];
     }
 
+    // Return a portion of the array from startIndex to endIndex
     return data.slice(startIndex, endIndex);
   }
 }
