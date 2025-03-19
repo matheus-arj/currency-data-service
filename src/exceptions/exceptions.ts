@@ -18,3 +18,12 @@ export class ExternalApiException extends HttpException {
     super(ExceptionsEnum.EXTERNAL_API_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }
+
+/**
+ * Custom exception to handle when no URL is provided
+ */
+export class ApiUrlException extends HttpException {
+  constructor() {
+    super(ExceptionsEnum.API_URL_NOT_FOUND, HttpStatus.BAD_REQUEST);
+  }
+}
