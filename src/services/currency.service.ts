@@ -30,17 +30,7 @@ export class CurrencyService {
       }
 
       const filteredData = this.filterData(response.data);
-
-      // Paginate the filtered data
-      const startIndex = (page - 1) * size;
-      const endIndex = startIndex + size;
-      this.logger.log(
-        `page: ${page}, size: ${size}, startIndex: ${startIndex}, endIndex: ${endIndex}, totalItems: ${filteredData.length}`,
-      );
-
-      const paginatedData = filteredData.slice(startIndex, endIndex);
-
-      return paginatedData;
+      return this.paginateData(filteredData, page, size);
     } catch (error) {
       if (error instanceof ApiUrlException) {
         this.logger.error(error.message);
@@ -70,5 +60,23 @@ export class CurrencyService {
         createdDate: data[key].create_date,
       };
     });
+  }
+
+  private paginateData(data: CurrencyDto[], page: number, size: number): CurrencyDto[] {
+    // Paginate the filtered data
+    const totalItems = data.length;
+    const startIndex = (page - 1) * size;
+    const endIndex = startIndex + size;
+
+    this.logger.log(
+      `page: ${page}, size: ${size}, startIndex: ${startIndex}, endIndex: ${endIndex}, totalItems: ${totalItems}`,
+    );
+
+    if (startIndex >= totalItems) {
+      // If the requested page is greater than the number of available pages
+      return [];
+    }
+
+    return data.slice(startIndex, endIndex);
   }
 }
