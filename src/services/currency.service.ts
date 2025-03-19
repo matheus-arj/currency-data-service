@@ -1,22 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { CurrencyDto } from 'src/dtos/currency.dto';
-import { ExceptionsEnum } from 'src/exceptions/enums/exceptions.enum';
-import { ExternalApiException, ExternalApiNoDataException } from 'src/exceptions/exceptions';
+import {
+  ApiUrlException,
+  ExternalApiException,
+  ExternalApiNoDataException,
+} from 'src/exceptions/exceptions';
 
 @Injectable()
 export class CurrencyService {
-  //Logger to log error
   private readonly logger = new Logger(CurrencyService.name);
 
   //API URL to get currency exchange data
   private readonly URL = process.env.API_URL;
 
-  async getCurrencyData(): Promise<CurrencyDto[]> {
+  public async getCurrencyData(): Promise<CurrencyDto[]> {
     try {
       if (!this.URL) {
-        throw new BadRequestException(ExceptionsEnum.API_URL_NOT_FOUND);
+        throw new ApiUrlException();
       }
 
       //Call to external API
@@ -30,14 +32,17 @@ export class CurrencyService {
       const filteredData = this.filterData(response.data);
       return filteredData;
     } catch (error) {
+      if (error instanceof ApiUrlException) {
+        this.logger.error(error.message);
+        throw error;
+      }
+
       if (error instanceof ExternalApiNoDataException) {
+        this.logger.error(error.message);
         throw error;
       }
 
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-
+      this.logger.error(error);
       throw new ExternalApiException();
     }
   }
