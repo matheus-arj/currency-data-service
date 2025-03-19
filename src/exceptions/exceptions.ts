@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ExceptionsEnum } from './exceptions.enum';
+import { ExceptionsEnum } from './enums/exceptions.enum';
 
 /**
  * Custom exception to handle when no data is returned from the external API.
